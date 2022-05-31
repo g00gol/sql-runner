@@ -4,84 +4,84 @@ import Editor from "@monaco-editor/react"
 import Table from "./components/DynamicTable"
 
 function App() {
-
   // data parsed from .csv file
-  const [parsedData, setParsedData] = useState([])
-  const handleDataChange = (newData) => {
-    setParsedData(newData)
-    console.log(parsedData)
-  }
-  // value of table header
-  const [header, setHeader] = useState([])
-  // value of code in editor
-  const [code, setCode] = useState("")
+  const [parsedData, setParsedData] = useState({ value: [], header: "" }) // object
   // determines whether table should is active or not
-  const [active, setActive] = useState(false)
+  const [active, setActive] = useState(false) // boolean
+  // sets code from value of editor
+  const [code, setCode] = useState("")
+
+  // updates data when changed in tables
+  const handleDataChange = (newData) => setParsedData({ value: newData, header: parsedData.header }) // object
+  //
+  const queries = [""]
+
+  // used CSV files
+  const shippersCSV = "https://raw.githubusercontent.com/graphql-compose/graphql-compose-examples/master/examples/northwind/data/csv/shippers.csv"
+  const orderDetailsCSV = "https://raw.githubusercontent.com/graphql-compose/graphql-compose-examples/master/examples/northwind/data/csv/order_details.csv"
+  const employeesCSV = "https://raw.githubusercontent.com/graphql-compose/graphql-compose-examples/master/examples/northwind/data/csv/employees.csv"
 
   // main function to determine what information needs to be displayed on table
   // passes data through states
   function run() {
+    // function to parse through given .csv file
+    function parseThrough(file) {
+      Papa.parse(file, {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: parsed => {
+          setParsedData({ value: parsed.data, header: parsed.meta["fields"] })
+        }
+      })
+      setActive(true)
+    }
+
+    // determines which .csv file to parse from
     switch (code) {
-      // 
       default:
+        alert("Invalid input")
+        setActive(false)
         return
 
       case "SELECT * FROM shippers":
-        Papa.parse("https://raw.githubusercontent.com/graphql-compose/graphql-compose-examples/master/examples/northwind/data/csv/shippers.csv", {
-          download: true,
-          header: true,
-          skipEmptyLines: true,
-          complete: shippers => {
-            setParsedData(shippers.data)
-            setHeader(shippers.meta["fields"])
-          }
-        })
-        setActive(true)
+        parseThrough(shippersCSV)
         break
 
       case "SELECT * FROM orderDetails":
-        Papa.parse("https://raw.githubusercontent.com/graphql-compose/graphql-compose-examples/master/examples/northwind/data/csv/order_details.csv", {
-          download: true,
-          header: true,
-          skipEmptyLines: true,
-          complete: orderDetails => {
-            setParsedData(orderDetails.data)
-            setHeader(orderDetails.meta["fields"])
-          }
-        })
-        setActive(true)
+        parseThrough(orderDetailsCSV)
         break
 
       case "SELECT * FROM employees":
-        Papa.parse("https://raw.githubusercontent.com/graphql-compose/graphql-compose-examples/master/examples/northwind/data/csv/employees.csv", {
-          download: true,
-          header: true,
-          skipEmptyLines: true,
-          complete: employees => {
-            setParsedData(employees.data)
-            setHeader(employees.meta["fields"])
-          }
-        })
-        setActive(true)
+        parseThrough(employeesCSV)
         break
-
     }
   }
 
+  const defaultMsg = `-- Query from existing databases
+-- DATABASES:
+-- shippers
+-- orderDetails
+-- employees`
+
   return (
-    <div className="bg-red-400">
+    <div className="w-3/4 mx-auto">
+      <h1 className="text-3xl text-blue-500 my-4 font-bold">SQL Query Runner</h1>
       {/* Simple code editor from monaco */}
       <Editor
+        className="border"
         onChange={(value) => { setCode(value) }}
         height="40vh"
         width="100%"
         defaultLanguage="sql"
-        defaultValue="# Enter your code here"
+        defaultValue={defaultMsg}
       />
-      <button onClick={run}>Run</button>
 
-      <Table active={active} data={parsedData} column={header} handleDataChange={handleDataChange} />
+      <button onClick={run} className="py-2 px-4 bg-blue-500 float-right text-white font-bold hover:bg-gray-700 transition-all">Run</button>
 
+      {parsedData.value && parsedData.header &&
+        <Table active={active} data={parsedData.value} column={parsedData.header} handleDataChange={handleDataChange} />
+      }
     </div>
   )
 }
