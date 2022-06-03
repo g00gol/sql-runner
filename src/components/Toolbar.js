@@ -1,6 +1,6 @@
 import { CSVLink } from "react-csv"
 
-export default function Toolbar({ data, dataLength, handleEdit, handleAdd, handleDelete }) {
+export default function Toolbar({ data, handleEdit, handleAdd, handleDelete, handleFilter, filterBy }) {
 	return (
 		<>
 			<div className="bg-gray-200">
@@ -8,10 +8,7 @@ export default function Toolbar({ data, dataLength, handleEdit, handleAdd, handl
 				<button className="p-2 hover:bg-gray-400 transition-all" onClick={() => handleEdit()}>Edit</button>
 				<button className="p-2 hover:bg-gray-400 transition-all" onClick={() => handleAdd()}>Add</button>
 				<button className="p-2 hover:bg-gray-400 transition-all" onClick={() => handleDelete()}>Delete</button>
-			</div>
-			<div className="bg-gray-100">
-				<h1 className="px-2">Rows: {dataLength.rows}</h1>
-				<h1 className="px-2">Columns: {dataLength.columns}</h1>
+				<input className="m-2 px-2" type="text" placeholder="Search..." value={filterBy} onChange={(e) => handleFilter(e.target.value)} />
 			</div>
 		</>
 	)

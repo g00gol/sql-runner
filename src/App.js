@@ -1,7 +1,13 @@
-import { useState } from "react"
+import { useState, useCallback } from "react"
+import { useDropzone } from "react-dropzone"
 import Papa from "papaparse"
 import Editor from "@monaco-editor/react"
 import Table from "./components/DynamicTable"
+
+// used CSV files
+import shippersCSV from "./csv/shippers.csv"
+import orderDetailsCSV from "./csv/order_details.csv"
+import employeesCSV from "./csv/employees.csv"
 
 function App() {
   // data parsed from .csv file
@@ -13,30 +19,38 @@ function App() {
 
   // updates data when changed in tables
   const handleDataChange = (newData) => setParsedData({ value: newData, header: parsedData.header }) // object
-  //
-  const queries = [""]
 
-  // used CSV files
-  const shippersCSV = "https://raw.githubusercontent.com/graphql-compose/graphql-compose-examples/master/examples/northwind/data/csv/shippers.csv"
-  const orderDetailsCSV = "https://raw.githubusercontent.com/graphql-compose/graphql-compose-examples/master/examples/northwind/data/csv/order_details.csv"
-  const employeesCSV = "https://raw.githubusercontent.com/graphql-compose/graphql-compose-examples/master/examples/northwind/data/csv/employees.csv"
+
+  const onDrop = useCallback(acceptedFiles => {
+    if (acceptedFiles.length) {
+      parseThrough(acceptedFiles[0])
+    }
+  }, [])
+
+  const {
+    getRootProps,
+    getInputProps
+  } = useDropzone({
+    onDrop,
+    accept: "text/csv"
+  })
+
+  // function to parse through given .csv file
+  function parseThrough(file) {
+    Papa.parse(file, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: parsed => {
+        setParsedData({ value: parsed.data, header: parsed.meta["fields"] })
+      }
+    })
+    setActive(true)
+  }
 
   // main function to determine what information needs to be displayed on table
   // passes data through states
   function run() {
-    // function to parse through given .csv file
-    function parseThrough(file) {
-      Papa.parse(file, {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: parsed => {
-          setParsedData({ value: parsed.data, header: parsed.meta["fields"] })
-        }
-      })
-      setActive(true)
-    }
-
     // determines which .csv file to parse from
     switch (code) {
       default:
@@ -67,6 +81,11 @@ function App() {
   return (
     <div className="w-3/4 mx-auto">
       <h1 className="text-3xl text-blue-500 my-4 font-bold">SQL Query Runner</h1>
+
+      <div className="block mb-4 w-fit cursor-pointer" {...getRootProps()}>
+        <input {...getInputProps()} />
+        <button className="border rounded bg-gray-300 px-2 py-1 hover:bg-gray-500 transition-all">Upload CSV File</button>
+      </div>
       {/* Simple code editor from monaco */}
       <Editor
         className="border"

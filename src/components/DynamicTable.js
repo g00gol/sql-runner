@@ -7,6 +7,7 @@ function Table({ active, data, column, handleDataChange }) {
 	const [edit, setEdit] = useState(false)
 	const [update, setUpdate] = useState(false)
 	const [checkbox, setCheckbox] = useState({ checked: false, cIndex: [] })
+	const [filterBy, setFilterBy] = useState("")
 
 	// handles when editing is toggled
 	const handleEdit = () => {
@@ -17,7 +18,7 @@ function Table({ active, data, column, handleDataChange }) {
 		const first = data.splice(0, data.length)
 		const emptyObject = {}
 		for (let i of column) {
-			emptyObject[i] = ""
+			emptyObject[i] = " "
 		}
 		const added = [emptyObject].concat(first)
 		handleDataChange(added)
@@ -31,10 +32,18 @@ function Table({ active, data, column, handleDataChange }) {
 		}
 
 		// using for/of to get indexes stored
-		for (let i of checkbox.cIndex) {
-			delete data[i]
+		var count = 0
+		for (let i of checkbox.cIndex.sort((x, y) => (x - y))) {
+			delete data[Object.keys(data)[i - count]]
+			count++
 		}
+		setCheckbox({ checked: false, cIndex: [] })
 		handleDataChange(data)
+	}
+
+	const handleFilter = (el) => {
+		setFilterBy(el)
+		console.log(el)
 	}
 
 	// handles if checkbox is checked and gets the row's index
@@ -64,10 +73,17 @@ function Table({ active, data, column, handleDataChange }) {
 	return (
 		<div>
 			{/* Toolbar for editing, deleting, etc. */}
-			<Toolbar data={data} dataLength={{ rows: data.length, columns: column.length }} handleEdit={handleEdit} handleAdd={handleAdd} handleDelete={handleDelete} />
+			<Toolbar
+				data={data}
+				handleEdit={handleEdit}
+				handleAdd={handleAdd}
+				handleDelete={handleDelete}
+				handleFilter={handleFilter}
+				filterBy={filterBy}
+			/>
 
 			{/* Table */}
-			<table className="block w-full max-h-96 border overflow-scroll bg-white text-left">
+			<table id="table" className="block w-full max-h-96 border overflow-scroll bg-white text-left">
 				<thead>
 					<tr className="bg-gray-100">
 						<th className="border"></th>
@@ -84,7 +100,7 @@ function Table({ active, data, column, handleDataChange }) {
 				1. maps the rows of data object onto table (given 4 rows of data, code would return 4 rows)
 				2. maps each item of row into table cell (uses i as index to determine which data cell to return)
 				*/}
-					{data.map((items, index) => (
+					{data.filter(obj => Object.values(obj).find(el => el.toLowerCase().includes(filterBy))).map((items, index) => (
 						<tr key={index} >
 							{edit ? (
 								<td className="p-1 border">
