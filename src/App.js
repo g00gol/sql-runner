@@ -72,11 +72,10 @@ function App() {
     }
   }
 
-  const defaultMsg = `-- Query from existing databases
--- DATABASES:
--- shippers
--- orderDetails
--- employees`
+  const defaultMsg = `-- AVAILABLE QUERIES
+-- SELECT * FROM shippers
+-- SELECT * FROM orderDetails
+-- SELECT * FROM employees`
 
   return (
     <div className="w-3/4 mx-auto">
