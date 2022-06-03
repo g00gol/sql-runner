@@ -12,7 +12,6 @@
     "react-csv": "^2.2.2",
     "react-dom": "^18.1.0",
     "react-dropzone": "^14.2.1",
-    "react-infinite-scroll-component": "^6.1.0",
     "react-papaparse": "^4.0.2",
     "react-scripts": "^5.0.1",
     "web-vitals": "^2.1.4"
